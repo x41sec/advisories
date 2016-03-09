@@ -158,4 +158,4 @@ Timeline
 
 References
 ----------
-[1] https://www.x41-dsec.de/lab/advisories/x41-2016-001-libotr/otr-heap-overwrite-poc.py
+[1] https://github.com/x41sec/advisories/blob/master/X41-2016-001/otr-heap-overflow-poc.py
