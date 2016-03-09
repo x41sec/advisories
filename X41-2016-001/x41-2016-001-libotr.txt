@@ -1,0 +1,161 @@
+
+X41 D-Sec GmbH Security Advisory: X41-2016-001
+
+Memory Corruption Vulnerability in "libotr"
+===========================================
+
+Overview
+--------
+Severity Rating: high
+Confirmed Affected Version: 4.1.0 and below
+Confirmed Patched Version: libotr 4.1.1
+Vendor: OTR Development Team
+Vendor URL: https://otr.cypherpunks.ca
+Vendor Reference: OTR Security Advisory 2016-01
+Vector: Remote
+Credit: X41 D-Sec GmbH, Markus Vervier
+Status: public
+CVE: CVE-2016-2851
+CVSS Score: 8.1 (High)
+CVSS Vector: CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2016-001-libotr/
+
+Summary and Impact
+------------------
+A remote attacker may crash or execute arbitrary code in libotr by sending
+large OTR messages.
+While processing specially crafted messages, attacker controlled data on the
+heap is written out of bounds.
+No special user interaction or authorization is necessary in default
+configurations.
+
+Product Description
+-------------------
+Off-the-Record (OTR) Messaging is a cryptographic protocol used in well-known
+instant messaging clients such as Pidgin, ChatSecure, Adium and others. It
+is designed to work on top of existing protocols and used worldwide to provide
+secure communication in insecure environments.
+OTR is regarded as highly secure and according to documents revealed by
+Edward Snowden one of the protocols that the NSA is not able to decrypt via
+cryptanalysis.
+The most commonly used implementation of OTR is "libotr" which is a pure C 
+code implementation of the OTR protocol.
+
+Analysis
+--------
+During a manual code review X41 D-Sec GmbH discovered a remotely exploitable
+vulnerability in libotr.
+
+By sending large messages, an integer overflow can be triggered which
+subsequently leads to a heap overflow on 64 bit architectures.
+
+When a message of type OTRL_MSGSTATE_DATA is received during an established OTR
+conversation, this message is passed to function otrl_proto_accept_data in
+src/message.c line 1347:
+
+	case OTRL_MSGSTATE_ENCRYPTED:
+		extrakey = gcry_malloc_secure(OTRL_EXTRAKEY_BYTES);
+		err = otrl_proto_accept_data(&plaintext, &tlvs, context,
+		                  message, &flags, extrakey);
+
+After base64 decoding the message and reading various values from it, the
+length of a payload is read into a variable of type "unsigned int" in file
+proto.c line 784:
+
+	read_int(datalen);
+
+It is checked that the message buffer will contain at least a "datalen" number
+of bytes using read_int in proto.c line 785:
+
+	require_len(datalen);
+
+The macros "read_int" and "required_len" are defined in src/serial.h:
+
+	#define require_len(l) do { \
+		if (lenp < (l)) goto invval; \
+	    } while(0)
+
+	#define read_int(x) do { \
+		require_len(4); \
+		(x) = (((unsigned int)bufp[0]) << 24) | (bufp[1] << 16) | (bufp[2] << 8) | bufp[3]; \
+		bufp += 4; lenp -= 4; \
+	    } while(0)
+
+4 bytes are read from the message buffer and interpreted as unsigned int value.
+
+Subsequently a buffer of size datalen+1 is allocated using malloc
+in proto.c line 786:
+
+    data = malloc(datalen+1);
+    if (!data) {
+        err = gcry_error(GPG_ERR_ENOMEM);
+        goto err;
+    }
+
+Now data from the message is copied into this buffer using memmove in line 791:
+
+    memmove(data, bufp, datalen);
+
+The vulnerability is triggered if a value of 0xFFFFFFFF (MAX_UINT) is read from
+the message buffer. As datalen is of size 32-bit (unsigned int) the operation
+"datalen+1" will wrap around before being passed to malloc.
+This will effectively result in a zero allocation ( malloc(0) ) which is
+valid in common implementations of malloc on the x86_64 architecture.
+As no addition is done in the value passed to the call to memmove, 4 gigabytes
+of data are copied out of bounds to the heap location pointed to by data.
+
+Proof of Concept
+----------------
+In order to successfully trigger the vulnerability, an attacker must be able to
+send a data message of more than 5.5 gigabytes to a victim in order to pass
+the check "require_len(datalen)".
+Due to the support of fragmented OTR messages assembled by libotr this is
+possible in practice. By sending 275 messages of size 20MB each, X41 was able to
+make libotr process such a data message successfully on a system with 8GB of
+ram and 15GB of swap space. 
+As data types for lenp and other lengths of the message are 64 bit large size_t
+types on x86_64 architectures huge messages of multiple gigabytes are possible.
+Sending such a message to a pidgin client took only a few minutes on a fast
+network connection without visible signs of any attack to a user. 
+
+A proof of concept triggering a heap overwrite and crash in the pidgin-otr
+plugin for the popular pidgin messenger on x86_64 Linux architectures is
+available[1].
+
+The crash occurs due to the overwrite hitting unmapped memory. Using techniques
+such as heap grooming, X41 was able to inflate the heap to more than 4GB and
+overwrite function pointers and arguments on the heap in order to take over
+control flow. A working exploit will not be published at this time.
+
+Interaction by users beyond having enabled OTR is not necessary as OTR sessions
+are automatically established with anyone by default in Pidgin and other common
+software using libotr. This also applies to unauthorized contacts in most
+default configurations.
+
+Workarounds
+-----------
+As a temporary workaround on Linux and BSD systems, the amount of memory
+available to the process running libotr may be limited to less than 4GB via
+ulimit.
+
+About X41 D-Sec GmbH
+--------------------
+X41 D-Sec is a provider of application security services. We focus
+on application code reviews, design review and security testing. X41 D-Sec GmbH
+was founded in 2015 by Markus Vervier. We support customers in various
+industries such as finance, software development and public institutions.
+
+Timeline
+--------
+2016-02-17	Discovery during a manual code review of "libotr" version 4.1.0
+2016-02-17	Initial PoC
+2016-02-18	Vendor contacted
+2016-02-18	Vulnerability confirmed by vendor
+2016-03-03	Vendor patch available
+2016-03-04	CVE requested
+2016-03-06	CVE-2016-2851 assigned
+2016-03-09	Embargo lifted and disclosure
+
+References
+----------
+[1] https://www.x41-dsec.de/lab/advisories/x41-2016-001-libotr/otr-heap-overwrite-poc.py
