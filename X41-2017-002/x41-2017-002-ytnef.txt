@@ -134,11 +134,11 @@ development and public institutions.
 Timeline
 --------
 2017-02-10	Issues found
-2016-02-12	Vendor contacted
-2016-02-12	Vendor replied
-2016-02-12	CVE ID requested
-2016-02-13	Pull request for patch send as per vendor request
-2016-02-13	Issue 9 / Directory Traversal reported
-2016-02-14	Issues fixed, 1.9.1 released
-2016-02-15	Advisory release
+2017-02-12	Vendor contacted
+2017-02-12	Vendor replied
+2017-02-12	CVE ID requested
+2017-02-13	Pull request for patch send as per vendor request
+2017-02-13	Issue 9 / Directory Traversal reported
+2017-02-14	Issues fixed, 1.9.1 released
+2017-02-15	Advisory release
 
