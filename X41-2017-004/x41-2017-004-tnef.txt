@@ -7,7 +7,7 @@ Multiple Vulnerabilities in tnef
 Overview
 --------
 Confirmed Affected Versions: 1.4.12 and earlier
-Confirmed Patched Versions: 
+Confirmed Patched Versions: 1.4.13 
 Vendor: verdammelt
 Vendor URL: https://github.com/verdammelt/tnef/
 Vector: File
@@ -18,21 +18,14 @@ Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2017-004-tnef/
 
 Summary and Impact
 ------------------
-Multiple Integer Overflows, Type Confusions and Out of Band Reads
-and Writes have been discovered in tnef 1.4.12 and earlier. These could
+Multiple Integer Overflows, Type Confusions and Out of Band Reads and Writes have been discovered in tnef 1.4.12 and earlier. These could
 be exploited by tricking a user into opening a malicious winmail.dat file.
 
 
 Product Description
 -------------------
 From the Readme.md:
-TNEF is a program for unpacking MIME attachments of type "application/ms-tnef". This is
-a Microsoft only attachment. Due to the proliferation of Microsoft Outlook and Exchange 
-mail servers, more and more mail is encapsulated into this format.
-The TNEF program allows one to unpack the attachments which were encapsulated into the 
-TNEF attachment. Thus alleviating the need to use Microsoft Outlook to view the attachment.
-TNEF is mainly tested and used on GNU/Linux and CYGWIN systems. It 'should' work on other 
-UNIX and UNIX-like systems.
+TNEF is a program for unpacking MIME attachments of type "application/ms-tnef". This is a Microsoft only attachment. Due to the proliferation of Microsoft Outlook and Exchange mail servers, more and more mail is encapsulated into this format. The TNEF program allows one to unpack the attachments which were encapsulated into the TNEF attachment. Thus alleviating the need to use Microsoft Outlook to view the attachment. TNEF is mainly tested and used on GNU/Linux and CYGWIN systems. It 'should' work on other UNIX and UNIX-like systems.
 
 
 
@@ -40,15 +33,13 @@ Integer Overflows in Memory Allocator
 =====================================
 Severity Rating: High 
 Vector: Local
-CVE: Not yet assigned 
+CVE: CVE-2017-6307 
 CVSS Score: 7.0 
 CVSS Vector: CVSS:3.0/AV:L/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:H
 
 Summary and Impact
 ------------------
-Several Integer Overflows, which can lead to Heap Overflows
-have been identified in the functions, which wrap memory
-allocation. 
+Several Integer Overflows, which can lead to Heap Overflows have been identified in the functions, which wrap memory allocation. 
 
 Workarounds
 -----------
@@ -60,15 +51,13 @@ Type Confusion in src/tnef.c:parse_file()
 =========================================
 Severity Rating: High
 Vector: Local
-CVE: Not yet assigned
+CVE: CVE-2017-6308
 CVSS Score: 7.0
 CVSS Vector: CVSS:3.0/AV:L/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:H
 
 Summary and Impact
 ------------------
-Two type confusions have been identified in the parse_file()
-function. These might lead to invalid read and write operations,
-controlled by an attacker.
+Two type confusions have been identified in the parse_file() function. These might lead to invalid read and write operations, controlled by an attacker.
 
 Workarounds
 -----------
@@ -80,15 +69,13 @@ OOB Writes in src/mapi_attr.c:mapi_attr_read()
 ==============================================
 Severity Rating: High
 Vector: Local
-CVE: Not yet assigned
+CVE: CVE-2017-6309
 CVSS Score: High
 CVSS Vector: CVSS:3.0/AV:L/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:H
 
 Summary and Impact
 ------------------
-Two OOB Writes have been identified in src/mapi_attr.c:mapi_attr_read() 
-These might lead to invalid read and write operations,
-controlled by an attacker.
+Two OOB Writes have been identified in src/mapi_attr.c:mapi_attr_read(). These might lead to invalid read and write operations, controlled by an attacker.
 
 Workarounds
 -----------
@@ -99,30 +86,22 @@ Type Confusion in src/file.c:file_add_mapi_attrs()
 ==================================================
 Severity Rating: High
 Vector: Local
-CVE: Not yet assigned
+CVE: CVE-2017-6310
 CVSS Score: 7.0
 CVSS Vector: CVSS:3.0/AV:L/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:H
 
 Summary and Impact
 ------------------
-Four type confusions have been identified in the file_add_mapi_attrs()
-function. These might lead to invalid read and write operations,
-controlled by an attacker.
+Four type confusions have been identified in the file_add_mapi_attrs() function. These might lead to invalid read and write operations, controlled by an attacker.
 
 Workarounds
 -----------
 None, X41 D-Sec GmbH recommends to update to the latest version.
 
 
-
-
-
 About X41 D-Sec GmbH
 --------------------
-X41 D-Sec is a provider of application security services. We focus
-on application code reviews, design review and security testing. X41 D-Sec GmbH
-was founded in 2015 by Markus Vervier. We support customers in various
-industries such as finance, software development and public institutions.
+X41 D-Sec is a provider of application security services. We focus on application code reviews, design review and security testing. X41 D-Sec GmbH was founded in 2015 by Markus Vervier. We support customers in various industries such as finance, software development and public institutions.
 
 Timeline
 --------
@@ -131,5 +110,6 @@ Timeline
 2017-02-20	CVE IDs requested
 2017-02-21	Vendor Reply
 2017-02-23	Vendor releases patched version
-2017-02-23	Advisory relased
+2017-02-23	Advisory released
+2017-02-24	CVE ID assigned
 
