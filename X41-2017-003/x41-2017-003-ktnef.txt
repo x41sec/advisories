@@ -1,0 +1,50 @@
+
+X41 D-Sec GmbH Security Advisory: X41-2017-003
+
+Directory Traversal in ktnef
+=================================
+
+Overview
+--------
+Severity Rating: Medium
+Confirmed Affected Versions: 5.4.2
+Confirmed Patched Versions: 5.4.3
+Vendor: KDE
+Vendor URL: https://cgit.kde.org/ktnef.git
+Vector: Via file
+Credit: X41 D-Sec GmbH, Eric Sesterhenn
+Status: private
+CVE: not yet assigned
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2017-003-ktnef/
+
+
+
+Summary and Impact
+------------------
+A directory traversal issue was found in ktnef which can be exploited by tricking a user into opening a malicious winmail.dat file. The issue allows to write files with the permission of the user opening the winmail.dat file during extraction.
+
+
+Product Description
+-------------------
+ktnef offers a library and utilities to extract the files from winmail.dat files. winmail.dat files are send by Microsoft Outlook when forwarding files via e-mail.
+
+
+Workarounds
+-----------
+Apply the vendor supplied patch: https://cgit.kde.org/ktnef.git/commit/?id=4ff38aa15487d69021aacad4b078500f77fb4ae8
+
+
+About X41 D-Sec GmbH
+--------------------
+X41 D-Sec is a provider of application security services. We focus on application code reviews, design review and security testing. X41 D-Sec GmbH was founded in 2015 by Markus Vervier. We support customers in various industries such as finance, software development and public institutions.
+
+Timeline
+--------
+2017-02-13	Issue found
+2017-02-14	Vendor contacted
+2017-02-14	Vendor contacted, replied instantly
+2017-02-14	Vendor supplied with example files
+2017-02-15	CVE ID requested by vendor
+2017-02-16	Patch supplied by vendor
+2017-02-27	Patch released
+2017-02-27	Advisory released
