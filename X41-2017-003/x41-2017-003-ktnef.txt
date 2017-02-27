@@ -13,7 +13,7 @@ Vendor: KDE
 Vendor URL: https://cgit.kde.org/ktnef.git
 Vector: Via file
 Credit: X41 D-Sec GmbH, Eric Sesterhenn
-Status: private
+Status: Public
 CVE: not yet assigned
 Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2017-003-ktnef/
 
