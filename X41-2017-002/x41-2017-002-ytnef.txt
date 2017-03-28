@@ -43,15 +43,15 @@ performed in the code.
 
 In total 9 patches were generated for the following issues:
 
-1. Null Pointer Deref / calloc return value not checked
-2. Infinite Loop / DoS
-3. Buffer Overflow in version field
-4. Out of Bound Reads
-5. Integer Overflow
-6. Invalid Write and Integer Overflow
-7. Out of Bounds read
-8. Out of Bounds read and write
-9. Directory Traversal using the filename
+1. Null Pointer Deref / calloc return value not checked (CVE-2017-6298)
+2. Infinite Loop / DoS (CVE-2017-6299)
+3. Buffer Overflow in version field (CVE-2017-6300)
+4. Out of Bound Reads (CVE-2017-6301)
+5. Integer Overflow (CVE-2017-6302)
+6. Invalid Write and Integer Overflow (CVE-2017-6303)
+7. Out of Bounds read (CVE-2017-6304)
+8. Out of Bounds read and write (CVE-2017-6305)
+9. Directory Traversal using the filename (CVE-2017-6306)
 
 
 To detail some of the findings, here are excerpts from the quickly written
