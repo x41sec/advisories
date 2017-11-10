@@ -8,13 +8,13 @@ Overview
 --------
 Severity Rating: High
 Confirmed Affected Versions: 3.1.0
-Confirmed Patched Versions: N/A
+Confirmed Patched Versions: after commit c67d275
 Vendor: Shadowsocks
 Vendor URL: https://github.com/shadowsocks/shadowsocks-libev
 Vector: Local
 Credit: X41 D-Sec GmbH, Niklas Abel
 Status: Public
-CVE: not yet assigned
+CVE: CVE-2017-15924
 Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2017-010-shadowsocks-libev/
 
 
@@ -83,3 +83,6 @@ Timeline
 2017-10-12	Vendor contacted, replied to create a public issue on GitHub
 2017-10-13	Created public issue on GitHub
 2017-10-13	Advisory release
+2017-10-14	Vendor patched the vulnerability
+2017-10-27	CVE ID assigned
+2017-11-03	Advisory updated with CVE ID and patched version
