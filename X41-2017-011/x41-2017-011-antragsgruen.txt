@@ -1,0 +1,109 @@
+X41 D-Sec GmbH Security Advisory: X41-2017-011
+
+Multiple Vulnerabilities in Antragsgrün web application
+=======================================================
+
+
+Overview
+--------
+Confirmed Affected Versions: 3.7.4
+Confirmed Patched Versions: 3.7.5 
+Vendor: Netzbegrünung - Verein für GRÜNE Netzkultur
+Vendor URL: https://motion.tools/ or https://antragsgruen.de/
+Credit: X41 D-Sec GmbH, Eric Sesterhenn
+Status: Public
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2017-011-gruen/
+
+
+Summary and Impact
+------------------
+Several issues have been identified, which allow attackers to execute 
+JavaScript in the context of other users, forcing others without their
+knowledge to e.g. submit motions or vote for them.
+X41 did not perform a full test or audit on the software.
+
+
+Product Description
+-------------------
+Antragsgrün offers a clear and efficient tool for the effective administration
+of motions, amendments and candidacies: from submission to administration and
+print template.
+A number of organisations are already using the tool successfully such as the
+federal association of the German Green Party or the German Federal Youth
+Council. It can be easily adapted to a variety of scenarios.
+
+Stored XSS in Motion Proposer Name
+==================================
+Severity Rating: Medium
+Vector: Network
+CVE: CVE-2017-16823
+CWE: 79
+CVSS Score: 5.4 
+CVSS Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N
+
+
+Summary and Impact
+------------------
+When submitting a new motion the variable Initiator[primaryName] could
+be abused to insert JavaScript into the web page. This could for example
+force an administrator to accept the motion. The XSS is triggered when the
+signature of the motion is viewed.
+
+
+Workarounds
+-----------
+None
+
+Stored XSS in Motion Proposer Name
+==================================
+Severity Rating: Medium
+Vector: Network
+CVE: CVE-2017-16824
+CWE: 79
+CVSS Score: 5.4 
+CVSS Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N
+
+
+Summary and Impact
+------------------
+When submitting a new motion the variable sections[33] could
+be abused to insert JavaScript into the web page. This could for example
+force an administrator to accept the motion. The XSS is triggered
+when the page "admin/motion/listall" is opened by an administrator.
+
+
+Workarounds
+-----------
+None
+
+Stored XSS in Consolidation Name
+================================
+Severity Rating: Medium
+Vector: Network
+CVE: CVE-2017-16825
+CWE: 79
+CVSS Score: 3.5
+CVSS Vector: CVSS:3.0/AV:N/AC:L/PR:H/UI:R/S:U/C:L/I:L/A:N
+
+
+Summary and Impact
+------------------
+When configuring a new Antragsgrün installation, an administrator
+can use the consolidation name (variable name is SiteCreateForm%5Btitle)
+to insert additional HTML and JavaScript into each page. This could be abused
+by e.g. including a JavaScript bitcoin mining tool.
+
+
+Workarounds
+-----------
+None
+
+Timeline
+========
+2017-11-12  Issues found
+2017-11-13  Vendor contacted
+2017-11-13  Vendor response
+2017-11-14  CVE IDs requested
+2017-11-15  CVE IDs assigned
+2017-11-15  Vendor releases fixed 3.7.5
+2017-11-15  Advisory release
