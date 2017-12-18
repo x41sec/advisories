@@ -1,0 +1,71 @@
+X41 D-Sec GmbH Security Advisory: X41-2017-009
+
+Remote command execution in Shadowsocks auto-ss
+===============================================
+
+Overview
+--------
+Severity Rating: High
+Confirmed Affected Versions: 0.1.3
+Confirmed Patched Versions: N/A
+Vendor: Steven Han
+Vendor URL: https://github.com/kirk91/ss-link-auto
+Vector: Network
+Credit: X41 D-Sec GmbH, Niklas Abel
+Status: Public
+CVE: Not assgined yet
+CWE: 78
+CVSS Score: 7.8
+CVSS Vector: CVSS:3.0/AV:A/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:L
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2017-007-shadowsocks_auto-ss/
+
+
+Summary and Impact
+------------------
+The Shadowsocks wrapper "auto-ss" logs into the website 
+"https://www.ss-link.com/login" and parses a table with Shadowsocks login
+credentials and information. It starts Shadowsocks to create a connection with the parsed credentials and server.
+When spawning a Shadowsocks connection, the lines 106-109 of auto_ss.py
+execute:
+"
+p = subprocess.Popen(
+    "exec " + ss_local_cmd, shell=True, stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT
+)
+"
+
+If an attacker is able to modify "https://www.ss-link.com" due to a man in
+the middle attack or a vulnerability on the web page, the parameters could
+get modified to execute a command on the machine running ShadowSocks
+auto-ss. E.g. ";<evil command>#" could be attached to or used as an
+parameter to execute code on target machines.
+
+Product Description
+-------------------
+Auto-ss is a tool to distribute Shadowssocks server configurations. It is
+not part of Shadowsocks itself.
+
+
+Workarounds
+-----------
+There is no workaround available, do not use auto-ss until a patch is
+released. Passing untrusted input as arguments to shell commands
+should be avoided.
+
+
+About X41 D-Sec GmbH
+--------------------
+X41 D-Sec is a provider of application security services. We focus on
+application code reviews, design review and security testing. X41 D-Sec GmbH
+was founded in 2015 by Markus Vervier. We support customers in various
+industries such as finance, software development and public institutions.
+
+Timeline
+--------
+2017-09-29	Issue found
+2017-10-05	Vendor contacted via mail
+2017-11-07	Vendor contacted via GitHub
+2017-12-07	Deadline for public release has been reached
+2017-12-15	CVE ID requested
+2017-12-18	Created public issue on GitHub
+2017-12-18	Advisory release
