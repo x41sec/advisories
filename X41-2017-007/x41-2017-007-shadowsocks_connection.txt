@@ -1,0 +1,67 @@
+X41 D-Sec GmbH Security Advisory: X41-2017-007
+
+Remote command execution in Shadowsocks ConnecTion
+==================================================
+
+Overview
+--------
+Severity Rating: High
+Confirmed Affected Versions: 0.4, 0.5
+Confirmed Patched Versions: N/A
+Vendor: Wanjunzh
+Vendor URL: https://github.com/wanjunzh/ssct
+Vector: Network
+Credit: X41 D-Sec GmbH, Niklas Abel
+Status: Public
+CVE: Not assgined yet
+CWE: 78
+CVSS Score: 7.8
+CVSS Vector: CVSS:3.0/AV:A/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:L
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2017-007-shadowsocks_connection/
+
+
+Summary and Impact
+------------------
+The Shadowsocks wrapper "ShadowSocks ConnecTion" crawls a web page for
+Shadowsocks server credentials. This page is retrieved via unencrypted HTTP
+from URI "http://ss.ishadowx.com" as default. It starts Shadowsocks with the
+parsed credentials at line 98-101 in version 0.4, line 82-85 in version 0.5 using check_call(sss, shell=True).
+
+If an attacker is able to modify the parsed web page due to a man in the
+middle attack, a vulnerability on the web page or through a malicious web
+page itself, the parameters could be modified to execute a command on the
+machine running ShadowSocks ConnecTion. E.g. ";<evil command>#" could be
+attached to or used as an parameter to execute code on target machines.
+
+Product Description
+-------------------
+ShadowSocks ConnecTion is a wrapper tool for Shadowsocks to consistently
+bypass firewalls. It parses a given website for Shadowsocks server
+credentials and uses the credentials to connect to a Shadowsocks server.
+
+
+Workarounds
+-----------
+There is no workaround available, do not use ShadowSocks ConnecTion until a
+patch is released. Passing untrusted input as arguments to shell commands
+should be avoided.
+
+
+About X41 D-Sec GmbH
+--------------------
+X41 D-Sec is a provider of application security services. We focus on
+application code reviews, design review and security testing. X41 D-Sec GmbH
+was founded in 2015 by Markus Vervier. We support customers in various
+industries such as finance, software development and public institutions.
+
+Timeline
+--------
+2017-09-29	Issue found
+2017-10-05	Vendor contacted
+2017-10-06	Vendor contacted, replied with PGP key
+2017-10-11	Advisory was sent to Vendor
+2017-11-07	0.5 still unpatched, sent a deadline of one month to the vendor
+2017-12-07	Deadline for public release has been reached
+2017-12-15	CVE ID requested
+2017-12-18	Created public issue on GitHub
+2017-12-18	Advisory release
