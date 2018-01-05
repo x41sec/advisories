@@ -7,7 +7,7 @@ Overview
 --------
 Severity Rating: High
 Confirmed Affected Versions: 0.4, 0.5
-Confirmed Patched Versions: N/A
+Confirmed Patched Versions: after commit f674f7dfe719b41da1fd502f2f17f34d31d0a1d0
 Vendor: Wanjunzh
 Vendor URL: https://github.com/wanjunzh/ssct
 Vector: Network
@@ -42,9 +42,8 @@ credentials and uses the credentials to connect to a Shadowsocks server.
 
 Workarounds
 -----------
-There is no workaround available, do not use ShadowSocks ConnecTion until a
-patch is released. Passing untrusted input as arguments to shell commands
-should be avoided.
+Use a ShadowSocks ConnecTion version with the patch from commit
+https://github.com/wanjunzh/ssct/commit/f674f7dfe719b41da1fd502f2f17f34d31d0a1d0
 
 
 About X41 D-Sec GmbH
@@ -65,3 +64,5 @@ Timeline
 2017-12-15	CVE ID requested
 2017-12-18	Created public issue on GitHub
 2017-12-18	Advisory release
+2017-12-21	Issues fixed with commit f674f7dfe719b41da1fd502f2f17f34d31d0a1d0
+2017-01-05	Advisory updated, patch confirmed
