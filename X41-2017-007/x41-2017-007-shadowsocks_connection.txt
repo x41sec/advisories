@@ -43,7 +43,7 @@ credentials and uses the credentials to connect to a Shadowsocks server.
 Workarounds
 -----------
 Use a ShadowSocks ConnecTion version with the patch from commit
-https://github.com/wanjunzh/ssct/commit/f674f7dfe719b41da1fd502f2f17f34d31d0a1d0
+"https://github.com/wanjunzh/ssct/commit/f674f7dfe719b41da1fd502f2f17f34d31d0a1d0".
 
 
 About X41 D-Sec GmbH
@@ -65,4 +65,4 @@ Timeline
 2017-12-18	Created public issue on GitHub
 2017-12-18	Advisory release
 2017-12-21	Issues fixed with commit f674f7dfe719b41da1fd502f2f17f34d31d0a1d0
-2017-01-05	Advisory updated, patch confirmed
+2018-01-05	Advisory updated, patch confirmed
