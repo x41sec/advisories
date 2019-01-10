@@ -1,0 +1,5 @@
+import re
+re.search(r'(x86_64|aarch64)\ (\d+)+\.(\d+)+\.(\d+)+.*Chrome.*(?:CitrixChromeApp)$', 'x86_64 ' + '1'*26)
+
+#HbbTV/1.1.1CE-HTML/1.1;THOM;SW-Version/1;SW-Version/1;SW-Version/1;SW-Version/1;SW-Version/1;SW-Version/1;SW-Version/1;SW-Version/1;SW-Version/1;SW-Version/1;LF
+
