@@ -1,7 +1,7 @@
 X41 D-Sec GmbH Security Advisory: X41-2019-003
 
-Stack buffer overflow in icalrecur.c icalrecuraddbydayrules
-===========================================================
+Stack-based buffer overflow in Thunderbird
+==========================================
 Severity Rating: High
 Confirmed Affected Versions: All versions affected
 Confirmed Patched Versions: Thunderbird ESR 60.7.XXX

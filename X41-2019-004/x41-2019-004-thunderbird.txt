@@ -1,7 +1,7 @@
 X41 D-Sec GmbH Security Advisory: X41-2019-004
 
-Type confusion in icalproperty.c icaltimezonegetvtimezone_properties
-====================================================================
+Type confusion in Thunderbird
+=============================
 Severity Rating: Medium
 Confirmed Affected Versions: All versions affected
 Confirmed Patched Versions: Thunderbird ESR 60.7.XXX
