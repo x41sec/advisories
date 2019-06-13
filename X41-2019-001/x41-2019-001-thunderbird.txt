@@ -15,7 +15,7 @@ CVE: CVE-2019-11704
 CWE: 122
 CVSS Score: 7.8
 CVSS Vector: CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H/E:U/RL:O
-Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2019-002-thunderbird
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2019-001-thunderbird
 
 Summary and Impact
 ==================
