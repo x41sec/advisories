@@ -1,0 +1,60 @@
+X41 D-SEC GmbH Security Advisory: X41-2020-001
+
+DLL Sideloading Vulnerability in Hasomed Elefant 20.01.01 Installer
+===================================================================
+Severity Rating: High
+Confirmed Affected Versions: 20.01.01 (SHA1 bf905c78637bb01b87950944ab26113455fc385f)
+Confirmed Patched Versions: 20.01.01 as released on 2020-03-03 (SHA1 fbbbe5184a61c638498fc47f62a62bebd282f945)
+Vendor: Hasomed
+Vendor URL: https://hasomed.de/produkte/elefant/
+Vendor Reference: N/A
+Vector: File in the same directory
+Credit: X41 D-SEC GmbH, Eric Sesterhenn
+Status: Public
+CVE: N/A
+CVSS Score: 7.1
+CVSS Vector: CVSS:3.0/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2020-001-elefant/
+
+Summary and Impact
+==================
+The Hasomed Elefant installer Elefant200101DVD.exe loads the DLL
+DXGIDebug.dll when present in the same directory as the installer.
+This allows an attacker to execute code in the process of the installer,
+when an attacker is able to e.g. trick the victim into downloading the DLL
+file and having it in the same download folder as the installer.
+
+Product Description
+===================
+Hasomed Elefant allows you to manage a medical office and patients.
+
+Analysis
+========
+The DLL is loaded into the installer's process space when started and code
+in this DLL is executed, which might be malicious and could install a backdoor
+into the freshly installed software.
+
+Proof of Concept
+================
+The failed loading can be easily identified by watching the process with
+ProcMon from the Sysinternals Suite.
+
+Timeline
+========
+2020-02-17 Issue found
+2020-02-27 Asked vendor for security contact
+2020-02-27 Vendor replies with contact
+2020-02-28 Information sent to vendor
+2020-03-02 Fixed version released
+2020-03-03 Advisory released
+
+About X41 D-SEC GmbH
+====================
+X41 is an expert provider for application security services.
+Having extensive industry experience and expertise in the area of information
+security, a strong core security team of world class security experts enables
+X41 to perform premium security services.
+Fields of expertise in the area of application security are security centered
+code reviews, binary reverse engineering and vulnerability discovery.
+Custom research and a IT security consulting and support services are core
+competencies of X41.
