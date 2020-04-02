@@ -1,0 +1,98 @@
+X41 D-Sec GmbH Security Advisory: X41-2020-004
+
+Multiple Vulnerabilities in Indamed Medical Office
+==================================================
+Highest Severity Rating: Medium
+Confirmed Affected Versions: v2.102.9327
+Confirmed Patched Versions: v2.102.9508 
+Vendor: Indamed
+Vendor URL: https://www.indamed.de/
+Credit: X41 D-Sec GmbH, Eric Sesterhenn 
+Status: Public
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2020-004-indamed
+
+
+Summary and Impact
+------------------
+Indamed Medical Office contains an XSS issue and stores user passwords
+as unsalted MD5 hashes. This allows to attack users and, in case an attacker
+gets access to the filesystem, retrieve plain text passwords.
+
+
+Product Description
+-------------------
+Indamed Medical Office allows you to manage a medical office and patients.
+
+Passwords stored as MD5 Hash
+============================
+Severity Rating: Medium
+Vector: Database Access
+CVE: N/A
+CWE: 916
+CVSS Score: 6.0
+CVSS Vector: CVSS:3.0/AV:L/AC:L/PR:H/UI:N/S:C/C:H/I:N/A:N
+
+
+Analysis
+--------
+Indamed Medical Office stores the secret passwords of the users as an MD5 hash in
+'C:\INDAMED\dat\MEDOFF.GDB'. MD5 can be brute-forced efficiently and should not be used
+for such purposes. Additionally, since no salt is used, rainbow
+tables can speed up the attack. These can be extracted easily and due to the
+nature of the database even reveal older hashes.
+
+
+Proof of Concept
+----------------
+strings MEDOFF.GDB | grep -e "^[0-9a-f]{32}$" | sort | uniq
+
+XSS in Webinterface
+===================
+Severity Rating: Medium
+Vector: Network
+CVE: N/A
+CWE: 79
+CVSS Score: 5.4
+CVSS Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N/CR:L/IR:L 
+
+
+Analysis
+--------
+The HTTP server running on localhost:2019, which is reachable via the 
+nginx server remotely, contains an XSS security flaw, which can be triggered
+easily via a malicious URL. This might allow an attacker to steal session
+data or modify the website.
+The webserver is only used for the REST-API which might render this
+attack vector useless.
+
+
+Proof of Concept
+----------------
+/mo/test<script>alert(1)</script>
+
+
+Workarounds
+-----------
+A quick workaround might be to add a WAF into the nginx configuration.
+
+Timeline
+========
+2020-02-24 Issue found
+2020-03-03 Asked vendor for security contact via email (info@indamed.de)
+2020-03-05 Asked vendor for security contact via website
+2020-03-05 Information sent to vendor
+2020-03-13 Vendor acknowledges
+2020-03-20 CVE requested
+2020-04-01 Patched version released
+2020-04-02 Advisory released
+
+About X41 D-SEC GmbH
+====================
+X41 is an expert provider for application security services.
+Having extensive industry experience and expertise in the area of information
+security, a strong core security team of world class security experts enables
+X41 to perform premium security services.
+Fields of expertise in the area of application security are security centered
+code reviews, binary reverse engineering and vulnerability discovery.
+Custom research and a IT security consulting and support services are core
+competencies of X41.
