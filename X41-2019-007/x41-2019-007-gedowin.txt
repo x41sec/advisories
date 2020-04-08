@@ -1,0 +1,90 @@
+X41 D-SEC GmbH Security Advisory: X41-2019-007
+
+Cleartext Credentials in GeDoWin Geburt
+=======================================
+Severity Rating: High
+Confirmed Affected Versions: GeDoWin Geburt since version 2012.2
+Confirmed Patched Versions: GeDoWin Geburt 2020.2 SP1, GeDoWin Geburt 2020.2
+Vendor: Saatmann GmbH & Co. KG
+Vendor URL: https://www.saatmann.de
+Vendor Reference: https://www.saatmann.de/Kunden/KundenpwdGeburt.htm
+Vector: Local
+Credit: X41 D-SEC GmbH, Niklas Abel
+Status: Public
+CVE: CVE-2020-10533
+CVSS Score: 8.8
+CVSS Vector: CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2019-007-gedowin/
+
+Summary and Impact
+==================
+The GeDoWin Geburt software backend stores clear text credentials in its MSSQL
+database if it was upgraded from a legacy system.
+The clear text credentials are the ones which were used before the
+upgrade from the legacy system and may have been replaced by the users.
+If a user tries to login, GeDoWin Geburt queries
+the remote database and gets the old credentials in XML format. Due to internal
+caching of valid database credentials this also worked with using wrong
+credentials to login in our test.
+The credentials from the XML file are stored in plain text and are not secured
+in any way.
+An attacker could obtain all old unprotected credentials of users of the
+GeDoWin Geburt software this way. This could give an attacker credentials
+which may still be valid and could be used by the users for other services
+as well.
+
+Product Description
+===================
+GeDoWin Geburt is software for birth documentation in labor and delivery units.
+Multiple clients share one remote database.
+
+Analysis
+========
+Gedowin Geburt stores the old passwords without protection in the TGNGPersonal table.
+This could violate the General Data Protection Regulation and exposes the
+user's old credentials to risk.
+Due to internal caching, GeDoWin Geburt clients are able to login to the Gedowin Geburt
+database using the client with invalid credentials, if a valid user has
+been logged in with valid credentials before.
+Therefore even users with invalid credentials could be able to receive the XML file with
+clear-text credentials from the old users and login using these
+credentials from old accounts which have not been changed and also use all
+services which share the same username and password combination.
+
+Workarounds
+===========
+The clear-text passwords will be removed when updating to GeDoWin Geburt 2020.2
+or later.
+The vendor states that the users should have been requested to change their
+passwords after the upgrade from the legacy system.
+All users should be notified to use unique credentials
+for GeDoWin Geburt and to change their credentials if they still use
+the passwords which they used for the legacy system.
+
+Timeline
+========
+2019-11-07 Issue found
+2019-11-11 Vendor contacted through customer of X41
+2019-12-02 No updates from the vendor, advisory drafted
+2020-01-20 Customer of X41 grants permission to pass the advisory
+2020-01-20 BSI contacted through X41
+2020-01-22 BSI approved to take care of contacting the vendor and to notify affected hospitals
+2020-03-12 Vendor Requested CVE ID
+2020-03-16 Vendor requested a conference call with X41 to clarify internal program flows
+2020-03-19 Vendor had a conference call with X41 to clarify internal program flows
+2020-03-19 Vendor published GeDoWin Geburt version 2020.2 to mitigate the cleartext password issue
+2020-03-20 X41 added new information from the meeting to the advisory
+2020-04-02 Vendor notified X41 that the cached authentication issue was patched in version 2020.2 SP1
+2020-04-06 Vendor published version 2020.2 SP1
+2020-04-08 X41 published Advisory
+
+About X41 D-SEC GmbH
+====================
+X41 is an expert provider for application security services.
+Having extensive industry experience and expertise in the area of information
+security, a strong core security team of world class security experts enables
+X41 to perform premium security services.
+Fields of expertise in the area of application security are security centered
+code reviews, binary reverse engineering and vulnerability discovery.
+Custom research and IT security consulting and support services are core
+competencies of X41.
