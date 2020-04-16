@@ -12,8 +12,8 @@ Vector: Local
 Credit: X41 D-SEC GmbH, Niklas Abel
 Status: Public
 CVE: CVE-2020-10533
-CVSS Score: 8.8
-CVSS Vector: CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H
+CVSS Score: 6.5
+CVSS Vector: CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:N/A:N
 Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2019-007-gedowin/
 
 Summary and Impact
@@ -77,6 +77,7 @@ Timeline
 2020-04-02 Vendor notified X41 that the cached authentication issue was patched in version 2020.2 SP1
 2020-04-06 Vendor published version 2020.2 SP1
 2020-04-08 X41 published Advisory
+2020-04-15 X41 adjusted CVSS score based on BSI recommendation
 
 About X41 D-SEC GmbH
 ====================
