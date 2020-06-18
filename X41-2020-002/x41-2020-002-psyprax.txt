@@ -1,0 +1,114 @@
+X41 D-Sec GmbH Security Advisory: X41-2020-002
+
+Multiple Vulnerabilities in Psyprax 3.1.2.2
+===========================================
+Highest Severity Rating: Critical
+Confirmed Affected Versions: 3.1.2.2
+Confirmed Patched Versions: 3.2.2
+Vendor: Psyprax GmbH
+Vendor URL: https://www.psyprax.de/
+Credit: X41 D-Sec GmbH, Eric Sesterhenn
+Status: Public
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2020-002-psyprax
+
+
+Summary and Impact
+------------------
+Several passwords were not protected properly, which might help an
+attacker gain access or elevate privileges.
+
+
+Product Description
+-------------------
+Psyprax allows you to manage a medical office and patients.
+
+Screensaver Password not protected
+==================================
+Severity Rating: High
+Vector: Local User
+CVE: CVE-2020-10553
+CWE: 522
+CVSS Score: 8.8
+CVSS Vector: CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H
+
+
+Analysis
+--------
+The file C:\ProgramData\Psyprax32\PPScreen.ini contains a hash for 
+the lockscreen of the application. If that entry is removed, the lockscreen
+is no longer displayed and the app is no longer locked. All local
+users are able to modify that file.
+
+
+Workarounds
+-----------
+Use proper Windows screen locking.
+
+Firebird Database accessible with default password
+==================================================
+Severity Rating: Critical
+Vector: Network
+CVE: CVE-2020-10552
+CWE: 862
+CVSS Score: 9.8
+CVSS Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+
+
+Analysis
+--------
+The Firebird database is accessible with the default user 'sysdba' and
+password 'masterke' after installation. This allows any user to access it 
+and read and modify the contents, including passwords. Local database
+files can be accessed directly as well.
+
+
+Workarounds
+-----------
+Properly firewall the database and set a password.
+
+Passwords not securely stored
+=============================
+Severity Rating: High
+Vector: Local
+CVE: CVE-2020-10554
+CWE: 257
+CVSS Score: 8.8
+CVSS Vector: CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H
+
+
+Analysis
+--------
+Passwords used to encrypt the data are stored in the database in an obfuscated 
+format, which can be easily reverted. For example the password 'AAAAAAAA' is 
+stored in the database as 'MMMMMMMM'.
+These can be retrieved via the database:
+SQL> select * from KCFPCONFIGPARAM where KCFP_PARAM = 'CryptPassword';
+
+
+Workarounds
+-----------
+A proper password storage algorithm that includes a salt and is strong enough to prevent
+brute force attacks, such as argon2, scrypt or bcrypt, should be implemented.
+
+Timeline
+========
+2020-02-17 Issue found                                                     
+2020-02-27 Asked vendor for security contact by e-mail (info@psyprax.de)
+2020-03-02 Asked via website for security contact
+2020-03-04 Asked again via email (datenschutz@psyprax.de)
+2020-03-06 Vendor response, Advisory sent
+2020-03-09 Telephone call with vendor
+2020-03-13 CVE IDs assigned
+2020-06-15 DVDs with update send to customers
+2020-06-18 Advisory release
+
+About X41 D-SEC GmbH
+====================
+X41 is an expert provider for application security services.
+Having extensive industry experience and expertise in the area of information
+security, a strong core security team of world class security experts enables
+X41 to perform premium security services.
+Fields of expertise in the area of application security are security centered
+code reviews, binary reverse engineering and vulnerability discovery.
+Custom research and a IT security consulting and support services are core
+competencies of X41.
