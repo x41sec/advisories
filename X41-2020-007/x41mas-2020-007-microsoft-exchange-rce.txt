@@ -1,7 +1,7 @@
 |=.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-=|
-|=--------------*[ CVE-2020-16875 Protection/Filter Bypass ]*------------=|
+|=-------------*[ CVE-2020-16875 Protection/Filter Bypass ]*-------------=|
 |=.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-=|
-|=--------------------------*[ @x41sec ]*--------------------------------=|
+|=-----------------------------*[ @x41sec ]*-----------------------------=|
 |=.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-,.,-'^`-=|
                                                                            
            *             ,
@@ -202,7 +202,8 @@ mentioned above:
 
 5) Solution Advice
 
-It is strongly recommended to create a more stricter interface that
+A fix has been released[1] in the December Patch Tuesday.
+It is strongly recommended to create a more strict interface that
 can be accessed via the DLP API in Exchange. The usage of cmdlets
 is inherently dangerous because of the complexity of the Powershell
 scripting language. Instead a dedicated function interface that
@@ -214,7 +215,7 @@ only accepts whitelisted individual parameters is recommended.
 2020-09-28 - Patch analysis via the experimental X41 patch analysis pipeline
 2020-09-30 - Confirmed the patch is ineffective by creating a new PoC
 2020-10-01 - Report to MSRC
-2020-12-08 - A new fix was released in the December Patch Tuesday
+2020-12-08 - A new fix was released in the Patch Tuesday as CVE-2020-17132
 2020-12-09 - Bounty rejected since only a proof for on-prem was provided
 
 7) Credits
@@ -331,3 +332,5 @@ M=V0@/2!S>7,N87)G=ELR72YS<&QI="@B.B(I6S%=#0H@("`@;6%I;BAT<F=T
 -+"!U<W(L('!W9"D-"@``
 `
 end
+
+[1] https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2020-17132
