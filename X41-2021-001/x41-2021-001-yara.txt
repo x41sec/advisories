@@ -8,7 +8,7 @@ Confirmed Patched Versions: YARA v4.0.4
 Vendor: VirusTotal (Google Inc.)
 Vendor URL: https://virustotal.github.io/yara
 Credit: X41 D-Sec GmbH, Luis Merino
-Status: Private
+Status: Public
 Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2021-001-yara
 
 
