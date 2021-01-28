@@ -51,11 +51,11 @@ fat Mach-O file header can lead to arbitrary read.
         get_object(object, "file[%i]", i),
         context);
 
-When arch.offset + arch.size result does not fit in the uint64_t type
-the result will wraparound and might allow to bypass the
+When the arch.offset + arch.size result does not fit in the uint64_t type
+the result will wrap around and might allow to bypass the
 size < arch.offset + arch.size sanity check. Afterwards,
-macho_parse_file() will be called with a buffer and size values that
-could be invalid, resulting in arbitrary read and plausible infoleak or
+macho_parse_file() will be called with buffer and size values that
+could be invalid, resulting in arbitrary read and plausible infoleakage or a
 denial of service.
 
 Proof of Concept
@@ -97,7 +97,7 @@ command_struct.cmdsize<sizeof(yr_load_command_t).
 +    if (size - (command - data) < command_struct.cmdsize || command_struct.cmdsize < sizeof(yr_load_command_t))
        break;
 
-Please, note this needs to be patched in the two similar for-loops.
+Please note that this needs to be patched in the two similar for-loops.
 
 
 Proof of Concept
@@ -121,7 +121,7 @@ from command without checking if the buffer is big enough.
 
   memcpy(&sg, command, sizeof(yr_segment_command_64_t));
 
-resulting in out of bounds read when command is not big enough. Infoleak
+This results in an out of bounds read when command is not big enough. Infoleak
 or denial of service could be a plausible outcome. 
 
 It is recommended to check at least sizeof(yr_segment_command_64_t)
@@ -158,7 +158,7 @@ macho_handle_unixthread() and macho_handle_main().
 
 }
 
-Please, note we rely here on cmdsize having a safe value, which is
+Please note that we rely here on cmdsize having a safe value, which is
 checked in the fix proposed for the previous finding.
 
 
@@ -197,7 +197,7 @@ before calling macho_handle_unixthread().
       macho_handle_unixthread(command, object, context);
       break;
 
-Afterwards, when reading the entry point for the different archs, it is
+Secondly, when reading the entry point for the different architectures, it is
 assumed the buffer is big enough to read the corresponding
 yr_*_thread_state_t object. A not big enough buffer would lead to out
 of bounds reads and maybe denial of service or infoleaks. It is
@@ -283,7 +283,7 @@ recommended to check at least enough bytes are available.
      address = ppc64_state->srr0;
      is64 = true;
 
-Please, note we rely here oncmdsize having a safe value, which is
+Please note that we rely here on cmdsize having a safe value, which is
 checked in one of the fixes proposed above.
 
 Proof of Concept
@@ -302,10 +302,10 @@ CWE: 125
 
 Analysis
 --------
-macho_parse_file() calls macho_is_32(data) without checking size is at
-least 4 bytes. Out-of-bounds read happens when size < 4. Depending on
+macho_parse_file() calls macho_is_32(data) without checking that size is at
+least 4 bytes. An out of bounds read happens when size < 4. Depending on
 the initial parsed file size, data buffer could come from a mmaped
-region and the OOB read could lead to denial of service.
+region and the OOB read could lead to a denial of service.
 
 It is recommended to return from the function when size < 4.
 
