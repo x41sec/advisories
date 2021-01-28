@@ -61,7 +61,7 @@ denial of service.
 Proof of Concept
 ----------------
 Parse the https://github.com/x41sec/advisories/tree/master/X41-2021-001/yara-reproducers/int-overflow-macho-parse-fat-file
-sample via yrrulesscan_mem().
+sample via yr_rules_scan_mem().
 
 
 Out-of-bounds reads in macho_parse_file() and others
@@ -103,7 +103,7 @@ Please, note this needs to be patched in the two similar for-loops.
 Proof of Concept
 ----------------
 Parse the https://github.com/x41sec/advisories/tree/master/X41-2021-001/yara-reproducers/oob-macho-parse-file
-sample via yrrulesscan_mem().
+sample via yr_rules_scan_mem().
 
 
 Out-of-bounds reads in macho_handle_segment_64() and others
@@ -166,7 +166,7 @@ Proof of Concept
 ----------------
 Parse the https://github.com/x41sec/advisories/tree/master/X41-2021-001/yara-reproducers/oob-macho-handle-segment,
 https://github.com/x41sec/advisories/tree/master/X41-2021-001/yara-reproducers/oob-macho-handle-segment-64
-samples via yrrulesscan_mem().
+samples via yr_rules_scan_mem().
 
 
 Several out-of-bounds reads in macho_handle_unixthread()
@@ -289,7 +289,7 @@ checked in one of the fixes proposed above.
 Proof of Concept
 ----------------
 Parse the https://github.com/x41sec/advisories/tree/master/X41-2021-001/yara-reproducers/oob-macho-handle-unixthread
-sample via yrrulesscan_mem().
+sample via yr_rules_scan_mem().
 
 
 Out-of-bounds read in macho_is_32()
@@ -319,7 +319,7 @@ It is recommended to return from the function when size < 4.
 Proof of Concept
 ----------------
 Parse the https://github.com/x41sec/advisories/tree/master/X41-2021-001/yara-reproducers/oob-macho-is-32.v2
-sample via yrrulesscan_mem().
+sample via yr_rules_scan_mem().
 
 
 Timeline
