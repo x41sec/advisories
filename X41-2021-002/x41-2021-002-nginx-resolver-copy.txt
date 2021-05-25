@@ -6,7 +6,7 @@ Confirmed Affected Versions: 0.6.18 - 1.20.0
 Confirmed Patched Versions: 1.21.0, 1.20.1
 Vendor: F5, Inc.
 Vendor URL: https://nginx.org/
-Vendor Reference: http://mailman.nginx.org/pipermail/nginx-announce/2021/000300.html
+Vendor Reference: https://mailman.nginx.org/pipermail/nginx-announce/2021/000300.html
 Vector: Remote / DNS
 Credit: X41 D-SEC GmbH, Luis Merino, Markus Vervier, Eric Sesterhenn
 Status: Public

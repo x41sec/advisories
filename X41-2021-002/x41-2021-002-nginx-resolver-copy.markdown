@@ -22,7 +22,7 @@ permalink: /lab/advisories/x41-2021-002-nginx-resolver-copy/
 
 **Vendor URL:** https://nginx.org/
 
-**Vendor Reference:** http://mailman.nginx.org/pipermail/nginx-announce/2021/000300.html
+**Vendor Reference:** https://mailman.nginx.org/pipermail/nginx-announce/2021/000300.html
 
 **Vector:** Remote / DNS
 
