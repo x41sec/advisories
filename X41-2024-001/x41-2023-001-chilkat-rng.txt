@@ -1,0 +1,207 @@
+
+Advisory X41-2024-001: Weak Chilkat PRNG
+========================================
+
+Severity Rating: High
+Confirmed Affected Versions: <v9.5.0.98
+Confirmed Patched Versions: v9.5.0.98
+Vendor: Chilkat Software, Inc.
+Vendor URL: https://www.chilkatsoft.com/
+Vendor Reference: TBD
+Vector: RNG used for cryptographic operations leaks its state
+Credit: X41 D-Sec GmbH, Yasar Klawohn
+Status: Public
+CVE: CVE-2024-26329
+CWE: 338, 330
+CVSS Score: 7.4 / High
+CVSS Vector: CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:A/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N
+Advisory-URL:
+https://www.x41-dsec.de/lab/advisories/x41-2024-001-chilkat-prng/
+
+
+Summary and Impact
+------------------
+
+The Chilkat library generated secret key material using a pseudorandom number
+generator not designed for cryptographic purposes. Attackers observing a
+sufficient number of outputs can recover past and future outputs of it. This
+includes, for example, key material generated with it, allowing attackers to
+decrypt or alter data protected by the key material.
+
+
+Details
+-------
+
+The chilkat library implements many popular Internet protocols, data formats
+and algorithms and is available for over 30 different programming languages
+and runs on Windows, Mac OS, Linux, iOS, Android and ARM Single Board
+Computers.  Some of the functions exposed by the chilkat library make use of
+the R250[^0] pseudorandom number generator. The generated numbers are used for
+cryptographic purposes within the library itself (for example as seed in
+RSA-OAEP[^1]) or are recommended to be used for cryptographic purposes in the
+library’s documentation (i.e. genRandomBytesENC() in
+https://www.example-code.com/python/rsa_encryptKey.asp).
+
+The R250 PRNG has a state table with 250 32-bit integers and an index i into
+that table. A random number is generated as follows: 
+
+uint32t statetable[250];  // initialization omitted
+uint8_t i = 0;
+
+uint32t rand() {
+    uint8t j = (i + 103) % 250;
+    statetable[i] ^= statetable[j];
+    uint32t tmp = statetable[i];
+    i++;
+    return tmp;
+}
+
+
+To initialize R250, a different RNG is used to fill the state table with
+values[^1], for which chilkat uses the cryptographically secure pseudo random
+number generator (CSPRNG) Fortuna[^2]. However, only the first 250 outputs of
+the R250 PRNG are fit for cryptographic use in this scenario. Any subsequent
+outputs are linear combinations of the initial 250 outputs, since only an XOR
+is used to combine values from the previous state. This enables a direct
+cryptanalytic attack, as described by Kelsey et al.[^3]: “When an attacker is
+directly able to distinguish between PRNG outputs and random outputs, this is
+a direct cryptanalytic attack.”
+
+Since any newly generated number becomes part of the PRNG state, an attacker
+can recover the internal state of the PRNG if they are able to observe 250
+subsequent outputs. If the attacker can’t receive consecutive outputs, they
+can potentially still recover the internal state if they observe at least 500
+outputs (based on limited testing) outputs with the help of a satisfiability
+modulo theories (SMT) solver, such as Z3. In the case of non-consecutive
+outputs, the exact circumstances under which the state can be recovered are
+not yet determined.
+
+Obtaining the state is the first step for the next attack, for which we first
+introduce two security guarantees CSPRNGs need to provide: backtracking
+resistance and prediction resistance. Backtracking and prediction resistance
+mean that, if an attacker obtains the state of the PRNG, they cannot calculate
+prior or future outputs (or only a very limited subset of them), respectively.
+As per Kelsey et al., the attack abusing the lack of both of these guarantees
+is called a permanent compromise attack.  R250’s linearity and the fact that
+it is never reseeded or has additional entropy introduced, mean it is
+vulnerable the permanent compromise attack.
+
+In short, the internal state of R250 can be recovered by observing its
+outputs, after which any past and future outputs can be recovered. The R250
+PRNG is thus not cryptographically secure and should not be used for
+cryptographic purposes.
+
+We found a real-world case, where an RSA identity key for an end-to-end
+encrypted chat app is created with the chilkat library, as well as static
+per-chat AES keys used for message encryption. Chilkat's EncryptStringENC()
+method that implements RSA-OAEP for asymmetric encryption, uses the R250 PRNG
+to generate the seed for the mask generation function. Using this information,
+an attacker can recover the internal state of the R250 PRNG, if they receive
+about 100 messages. If the app is closed and opened again, the PRNG is
+initialized with new seeds and an attacker would have to start the attack
+over. With the recovered state, they can predict or recover the AES keys used
+for message encryption for chats created since the app was opened and until it
+is closed. Further, the RSA key used for asymmetric encryption and message
+signatures can be recovered, if the attacker manages to recover the state
+after account creation, before the app is closed for the first time. A
+compromise of the RSA key allows the attacker to decrypt all messages sent and
+received by the victim and to possibly impersonate them.  The calculated CVSS
+score uses the scenario of the chat app.
+
+The functionality that calls the vulnerable ChilkatRand::randomBytes(), and
+potentially leaks the PRNG state to an attacker, includes:
+- RSA OAEP encryption & PSS[^4] signing
+  - TLS RSA
+- SshTransport
+- Email
+  - message IDs
+  - content ID (via UUID)
+  - Email2::genEmailFilename2
+  - ClsEmail::ConvertInlineImages
+    - name of the converted images (image_ + 6 random bytes + .jpeg)
+  - MIME boundaries (via UUID)
+- UUIDv4 generation leaks state
+- OAuth1 nonce generation
+- Some part of OAuth2 might leak state
+- DNS Query IDs leak state
+- CkStringBuilder::AppendRandom
+- makeRandomPad
+- CkCrypt2::RandomizeIV
+- ClsJwe::createJwe
+- CkCrypt2::GenRandomBytesENC
+- CkString::appendRandom
+- CkByteData::appendRandom
+- ChilkatRand::randomEncoded
+- TlsProtocol
+- TlsClientHello
+- TlsSecurityParams
+- _clsTcp::createTimestampRequest
+  - Does something with ASN.1, so not a simple TCP request
+- SharePointAuth::buildCustomStsIntegratedXml
+
+Functionality that does not leak state directly but might be negatively
+impacted if state is leaked:
+- RSA, DSA key generation
+- Diffie-Hellman secret generation
+- SSH key generation (includes ECC keys)
+- TLS
+
+Applications that make direct or indirect use of the above functionality are
+potentially vulnerable.
+
+For SSH, RFC 4251 section 9.1 says: "[...] the pseudo-random number generator
+should be cryptographically secure (i.e., its next output not easily guessed
+even when knowing all previous outputs) and, furthermore, proper entropy needs
+to be added to the pseudo- random number generator. [...] The amount of
+entropy available to a given client or server may sometimes be less than what
+is required. In this case, one must either resort to pseudo-random number
+generation regardless of insufficient entropy or refuse to run the protocol.
+The latter is preferable."
+Session key generation might break if a weak PRNG is used.
+
+
+Proof of Concept
+----------------
+
+A proof-of-concept with detailed comments is provided in cve-2024-26329.tar.gz
+and can be run with the following commands:
+
+    docker build . -t chilkat_poc
+    docker run -it chilkat_poc
+
+
+
+Mitigation
+----------
+
+Update to Chilkat version v9.5.0.98 or later.
+
+
+Timeline
+--------
+
+2023-12: Problem discovered during internal audit and impact assessed
+2024-02-14: Initial contact with Chilkat and disclosure of technical details
+2024-02-14: Response from Chilkat and acknowledgment of issue
+2024-02-15: CVE requested
+2024-02-19: CVE-2024-26329 assigned
+2024-03-29: Start of release process for v9.5.0.98
+2024-04-03: Public disclosure
+
+About X41 D-Sec GmbH
+====================
+X41 is an expert provider for application security services.
+Having extensive industry experience and expertise in the area of information
+security, a strong core security team of world class security experts enables
+X41 to perform premium security services.
+
+Fields of expertise in the area of application security are security centered
+code reviews, binary reverse engineering and vulnerability discovery.
+Custom research and IT security consulting and support services are core
+competencies of X41.
+
+[^0]: https://doi.org/10.1016/0021-9991(81)90227-8
+[^1]: https://datatracker.ietf.org/doc/html/rfc8017#page-57
+[^2]: https://www.schneier.com/academic/fortuna/
+[^3]: https://www.schneier.com/wp-content/uploads/2017/10/paper-prngs.pdf
+[^4]: https://en.wikipedia.org/wiki/Probabilistic_signature_scheme
