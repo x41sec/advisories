@@ -1,0 +1,188 @@
+
+X41 D-Sec GmbH Security Advisory: X41-2024-002
+
+Multiple Vulnerabilities in Antragsgrün
+=======================================
+
+Highest Severity Rating: High
+Version: 4.14.0
+Confirmed Affected Versions: Commit 9c1ab3ca391eb66023b30d45e87c24589367ab6c
+Confirmed Patched Versions: 4.14.2 
+Vendor: Tobias Hößl
+Vendor URL: https://antragsgruen.de/
+Status: Public
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2024-002-antragsgruen/
+
+
+Summary and Impact
+------------------
+
+X41 identified a stored XSS issue that can be triggered from unauthenticated users to attack administrative users in Antragruen and allows performing actions as administrative users. Additionally, issues which circumvent the email verification process were identified.
+
+
+Product Description
+-------------------
+
+From the vendor homepage:
+
+
+Stored XSS in Motion Reason
+---------------------------
+
+Severity Rating: High 
+Vector: XSS
+CVE: CVE-2024-46884
+CWE: 80 - Improper Neutralization of Script-Related HTML Tags in a Web Page (Basic XSS)
+CVSS Score: 9.6
+CVSS Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H
+Credit: X41 D-Sec GmbH, Eric Sesterhenn
+
+
+Analysis:
+
+Anonymous users are often allowed to create new motions in Antragsgruen. When creating these, it is possible to go back and edit the motion via https://antragsgruen/std/motionname-id/edit. There is an optional field reason, which is not properly filtered against XSS attacks. The reason is passed via parameter sections[10] to the application and can be used for XSS injections. The XSS triggers when an administrator handles the motion and allows normal users to hijack the administrator's session. Another way to trigger the XSS after the publication is when visiting the HTML view via https://antragsgruen/std/motionname-id/plainhtml
+Other fields are not filtered either when using the edit endpoint.
+
+
+Proof of Concept:
+
+Tamper the submitted data at https://antragsgruen/std/motionname-id/edit
+
+
+Workarounds:
+
+Only allow registered users to submit motions to mitigate the attack vector to some extent.
+
+
+Open Redirect in Login and Logout
+---------------------------------
+
+Severity Rating: Medium 
+Vector: Open URL redirect
+CVE: CVE-2024-46882 
+CWE: 601 - URL Redirection to Untrusted Site
+CVSS Score: 6.1
+CVSS Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N
+Credit: X41 D-Sec GmbH, Eric Sesterhenn
+
+
+Analysis:
+
+Two open URL redirects were discovered in the web application. The logout redirect will instantly redirect the user to an attacker-controlled webpage, which makes phishing attacks easier. An attacker can send a link to a user of the application, potentially having them believe they are opening the application when it will, in fact, redirect them to a page controlled by the attacker. The page could pretend to be Antragsgruen's login page, or another page that suits the attacker's goal.
+
+
+Proof of Concept:
+
+https://antragsgruen/logout?backUrl=https://x41-dsec.de
+https://antragsgruen/login?backUrl=https://x41-dsec.de
+
+
+Workarounds:
+
+No workaround is currently known.
+
+
+Email Verification Bypass After Sign-up
+---------------------------------------
+
+Severity Rating: Medium
+Vector: Authentication
+CVE: CVE-2024-46883
+CWE: 287 - Improper Authentication
+CVSS Score: 5.3
+CVSS Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N
+Credit: X41 D-Sec GmbH, Yassine El Baaj
+
+
+Analysis:
+
+After users sign up, they are redirected to a page where they are expected to enter a code that has been sent per email to validate their account. This can be bypassed by simply clicking on another component of the user interface, the home button for example. The user is essentially logged in before completing the verification step. In addition to that, X41 noticed that browsing the application with a non-verified account did not have an impact on its functionality. Meaning that a non-verified user could do anything a verified one could also do.
+
+
+Workaround:
+
+No workaround is currently known.
+
+
+Email Verification Bypass After Email Change
+--------------------------------------------
+
+Severity Rating: 
+Vector: Email Verification
+CVE: CVE-2024-46883
+CWE: 345 - Insufficient Verification of Data Authenticity
+CVSS Score: 5.3
+CVSS Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N
+Credit: X41 D-Sec GmbH, Yassine El Baaj, JM
+
+
+Analysis:
+
+When a user requests a change of their email address, a random code is sent to the new address which they have to enter in order to prove access to the new address. This code is generated in createEmailChangeToken() in models/db/User.php as follows:
+
+    public function createEmailChangeToken(string $newEmail, int $timestamp): string
+    {
+        // [...]
+        $key = $newEmail . $timestamp . $this->id . $this->authKey;
+        return substr(sha1($key), 0, 10);
+    }
+
+
+All of the components are known to the user. The id and authKey are static values from the database and part of the _identity cookie.
+This makes it trivial for a user to generate the required code and change the email address to an address they don't have access to.
+
+
+Proof of Concept:
+
+X41 has successfully used the following script to generate the required code given the desired email address, the server's Date response header, and values from the _identity cookie.
+
+    #!/bin/bash
+    
+    read -rp 'Email to change to: ' email
+    read -rp 'Date header value: ' datestr
+    read -rp 'User ID (first entry of _identity cookie array): ' id
+    read -rp 'AuthKey (second entry, including \u0000s: ' authkey
+    
+    dateint=$(date -d "$datestr" +%s)
+    
+    raw="${email}${dateint}${id}${authkey}"
+    alt_raw="${email}$((dateint-1))${id}${authkey}"
+    
+    echo ---
+    
+    echo -ne "exact time:\t"
+    echo -ne "$raw" | sha1sum | head -c 10
+    echo
+    echo -ne "minus 1s:\t"
+    echo -ne "$alt_raw" | sha1sum | head -c 10
+    echo
+
+
+
+Workarounds:
+
+No workaround is currently known.
+
+Timeline
+========
+
+2024-07-24 Issue identified
+
+2024-08-27 Vendor contacted
+
+2024-08-27 Vendor reply
+
+2024-09-08 Fixed version released
+
+2024-09-09 Advisory release
+
+2024-09-09 CVE ID Requested
+
+2024-09-12 CVE ID Assigned
+
+About X41 D-Sec GmbH
+====================
+
+X41 is an expert provider for application security services. Having extensive industry experience and expertise in the area of information security, a strong core security team of world class security experts enables X41 to perform premium security services.
+
+Fields of expertise in the area of application security are security centered code reviews, binary reverse engineering and vulnerability discovery. Custom research and IT security consulting and support services are core competencies of X41.
