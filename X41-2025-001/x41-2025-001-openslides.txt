@@ -12,13 +12,13 @@ Confirmed Patched Versions: 4.2.5
 
 Vendor: Intevation GmbH
 
-Vendor URL: https://openslides.com/
+Vendor URL: <https://openslides.com/>
 
 Credit: X41 D-Sec GmbH, Eric Sesterhenn
 
 Status: Public
 
-Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2025-001-OpenSlides
+Advisory-URL: <https://www.x41-dsec.de/lab/advisories/x41-2025-001-OpenSlides/>
 
 
 Summary and Impact
@@ -39,7 +39,7 @@ Severity Rating: Medium
 
 Vector: XSS
 
-CVE: n/a
+CVE: CVE-2025-30342
 
 CWE: 80 - Improper Neutralization of Script-Related HTML Tags in a Web Page (Basic XSS)
 
@@ -47,7 +47,7 @@ CVSS Score: 5.5
 
 CVSS Vector: CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:L/I:L/A:L
 
-Fix: https://github.com/OpenSlides/openslides-backend/pull/2903
+Fix: <https://github.com/OpenSlides/openslides-backend/pull/2903/>
 
 
 Analysis
@@ -94,7 +94,7 @@ Severity Rating: Medium
 
 Vector: Timing Sidechannel
 
-CVE: n/t
+CVE: CVE-2025-3034
 
 CWE: 208: Observable Timing Discrepancy
 
@@ -102,7 +102,7 @@ CVSS Score: 5.3
 
 CVSS Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N
 
-Fix: https://github.com/OpenSlides/openslides-auth-service/pull/686
+Fix: <https://github.com/OpenSlides/openslides-auth-service/pull/686/>
 
 
 Analysis
@@ -137,7 +137,7 @@ Severity Rating: Low
 
 Vector: HTML Injection
 
-CVE: n/a 
+CVE: CVE-2025-30345
 
 CWE: 79 - Improper Neutralization of Input During Web Page Generation
 
@@ -145,7 +145,7 @@ CVSS Score: 3.5
 
 CVSS Vector: CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:N/I:L/A:N
 
-Fix: https://github.com/OpenSlides/openslides-client/pull/4774
+Fix: <https://github.com/OpenSlides/openslides-client/pull/4774/>
 
 
 Analysis
@@ -171,7 +171,7 @@ Severity Rating: Low
 
 Vector: Directory Traversal
 
-CVE: n/a
+CVE: CVE-2025-30343
 
 CWE: 23 - Relative Path Traversal
 
@@ -179,7 +179,7 @@ CVSS Score: 2.6
 
 CVSS Vector: CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:N/I:L/A:N
 
-Fix: https://github.com/OpenSlides/openslides-client/pull/4775
+Fix: <https://github.com/OpenSlides/openslides-client/pull/4775/>
 
 
 Analysis
@@ -201,3 +201,5 @@ Timeline
 2025-03-19 Patches supplied by vendor and fixed version released
 
 2025-03-20 Advisory released
+
+2025-03-21 CVE IDs assigned
