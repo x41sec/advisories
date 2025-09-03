@@ -1,0 +1,81 @@
+X41 D-Sec GmbH Security Advisory: x41-2024-004-Medico
+
+Missing Transport Security for Medico Classic Application Server Connections
+============================================================================
+
+Severity Rating: High 
+Vector: MitM on local network  
+CVE: Requested by vendor, didn't forward it to X41
+CWE: 319             
+CVSS Score: 7.1    
+CVSS Vector: CVSS:4.0/AV:A/AC:H/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:H/SI:H/SA:N
+Affected Version: CGM Medico below 29.01.02.01      
+Patched Versions: CGM Medico 29.01.02.01 and above (according to vendor)
+Vendor: CGM Clinical Europe GmbH
+Vendor URL: https://www.cgm.com/deu_de/produkte/krankenhaus/cgm-medico.html      
+Credit: X41 D-Sec GmbH, Luc Gommans and Niklas Abel   
+Status: Public          
+Advisory-URL: https://www.x41-dsec.de/lab/advisories/x41-2024-004-medico/
+
+
+Summary and Impact
+------------------
+
+The CGM MEDICO hospital information system (KIS) does not use transport encryption
+to secure its classic application server (dnet) connections by default.
+The classic application server sends Visual Basic scripts, PDF files, and other data used by MEDICO clients.
+Attackers could abuse this to inject arbitrary scripts to be executed on the computer,
+or view the documents and information being transmitted.
+
+
+Product Description
+-------------------
+
+The CGM MEDICO hospital information system (KIS) is used to manage hospitals and their patients,
+offering access to sensitive patient data.
+
+
+Analysis
+--------
+
+The MEDICO clients connect to the classic application servers e.g. via port 5102/TCP.
+Since the traffic is not encrypted by default,
+machine-in-the-middle attacks on the local network could see and modify the clear text data during transmission.
+
+The transferred data includes Visual Basic scripts (VBS), PDF files and other data.
+Test patient data is transferred as well, but no real patient data was seen during the investigation.
+Nevertheless, the transferred VBS scripts are executed on the client side,
+meaning that attackers could gain full access to patients' data and any other information
+on the computer by supplanting the scripts with their own code.
+
+
+Workaround
+----------
+
+Install the vendor patch or if you can't install and configure the encryption through
+version 29.01.02.01 or newer, a STUNNEL, VPN or SSH tunnel could be used to secure the connection.
+
+Timeline
+========
+
+2023-11-29 Issue identified during a penetration test.
+2024-02-01 Hospital contacted vendor regarding the issue.
+2024-02-02 Vendor replied with first feedback.
+2024-05-14 Hospital discussed with X41 the vendor's suggested workaround of piping classic application server connections through SSH by using PuTTY.
+2024-05-17 X41 contacted BSI because classic server connections don't seem to be encrypted.
+2024-10-24 Meeting with the Vendor, BSI and X41
+2025-06-04 Meeting with the Vendor, BSI and X41
+2025-07-30 Meeting with the Vendor and X41
+2025-08-13 Meeting with the Vendor and X41, CVE likely requested by vendor
+2025-09-03 Vendor released patch, advisory published
+
+About X41 D-SEC GmbH
+====================
+
+X41 is an expert provider for application security services.
+Having extensive industry experience and expertise in the area of information security,
+a strong core security team of world class security experts enables X41 to perform premium security services.
+Fields of expertise in the area of application security are security centered code reviews,
+binary reverse engineering and vulnerability discovery.
+Custom research and a IT security consulting and support services are core competencies of X41.
+
